@@ -313,7 +313,7 @@ p_cereb <- ggplot(
   geom_errorbar(aes(xmin = conf.low, xmax = conf.high), width = 0.2) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "gray50") +
   labs(title = "Cerebellum & Cortical ROIs",
-       x = "Beta Estimate",
+       x = "Estimate (B)",
        y = "Brain Region (ROI)") +
   scale_color_manual(
     values = c("TRUE" = "#2b8cbe", "FALSE" = "#de2d26"),
@@ -331,7 +331,7 @@ p_other <- ggplot(
   geom_vline(xintercept = 0, linetype = "dashed", color = "gray50") +
   scale_x_continuous(limits = c(-10, 10)) +
   labs(title = "Subcortical ROIs",
-       x = "Beta Estimate",
+       x = "Estimate (B)",
        y = "Brain Region (ROI)") +
   scale_color_manual(
     values = c("TRUE" = "#2b8cbe", "FALSE" = "#de2d26"),
@@ -364,7 +364,7 @@ ggplot(results, aes(x = estimate, y = reorder(roi, estimate))) +
     name = "Significance"
   ) +
   labs(
-    x = "Effect of Prenatal Protective Factors Score (β ± 95% CI)",
+    x = "Effect of Prenatal Protective Factors Score (B ± 95% CI)",
     y = "Brain Region (ROI)",
     title = "Associations Between Prenatal Protection Scores and ROI Volumes (FDR-corrected)"
   ) +
