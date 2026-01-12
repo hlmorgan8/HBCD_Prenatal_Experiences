@@ -238,7 +238,7 @@ ggplot(results, aes(x = estimate, y = reorder(roi, estimate))) +
                      labels = c("FALSE" = "ns", "TRUE" = "p < .05"),
                      name = "Significance") +
   labs(
-    x = "Beta Estimate",
+    x = "Estimate (B)",
     y = "Brain Region (ROI)",
     title = "Associations Between Prenatal Depression and ROI Volumes"
   ) +
@@ -259,7 +259,7 @@ ggplot(results, aes(y = estimate, x = reorder(roi, estimate))) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   coord_flip() +
   labs(
-    y = "β (Depression → ROI Volume)",
+    y = "B (Depression → ROI Volume)",
     x = "Brain Region",
     title = "Regions Associated with Prenatal Depression Scores"
   ) +
