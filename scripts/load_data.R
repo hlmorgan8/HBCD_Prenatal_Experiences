@@ -5,7 +5,7 @@
 ##                                                                            ##
 #################################################################################
 
-################Hannah Morgan 23OCT2025#########################################
+################Hannah Morgan 19JAN2026#########################################
 ##                                                                            ##
 ################################################################################
 
@@ -16,9 +16,9 @@ library(dplyr)
 library(arrow)
 
 ##This will load into the data directory to grab the data but assumes you have a symbolic link - the below will help you set that up
-###to create this, go to Terminal and enter in VACC with your netID
+###to create this, go to Terminal and enter and log into the in VACC (HPC specific to UVM) 
 #####cd into your project's raw data folder
-######  cd /users/h/m/hmorgan4/HBCD/Protective_Factors_Project/data/raw
+######  cd /XX/XX/XX/data/raw
 
 
 ##This is loading in data from your data dictionary
