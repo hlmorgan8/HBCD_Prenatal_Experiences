@@ -5,7 +5,7 @@
 ##                                                                            ##
 #################################################################################
 
-################Hannah Morgan 24OCT2025#########################################
+################Hannah Morgan 19JAN2026#########################################
 ##                                                                            ##
 ################################################################################
 
@@ -30,22 +30,21 @@ df_cov <- df_cov %>%
 df_cov$site <- factor(df_cov$site)
 summary(df_cov$site)
 
-# ##Removing any row that is in a site with 5 or less people in it
+###Removing any row that is in a site with 5 or less people in it
 df_cov <- df_cov %>%
-  group_by(site) %>%                     # group by site
-  filter(n() >= 5) %>%                   # keep only groups with >= 5 rows
-  ungroup()                              # remove grouping afterwards
+  group_by(site) %>%                     #group by site
+  filter(n() >= 5) %>%                   #keep only groups with >= 5 rows
+  ungroup()                              #remove grouping afterwards
 
 
 ##Be careful, it seems like R is still counting some sites as factors in the model.
-####The amount of levels should be 20 
 df_cov <- df_cov %>%
   filter(site %in% names(which(table(site) >= 5))) %>%
   droplevels()
 
 
 
-# Bar plot with counts labeled
+#Bar plot with counts labeled
 ggplot(df_cov, aes(x = site)) +
   geom_bar(fill = "steelblue") +
   geom_text(
@@ -87,7 +86,7 @@ df_cov <- df_cov %>%
 df_cov$mat_ed_cat <- factor(df_cov$mat_ed_cat)
 
 ##Now this will need to be converted into categories:
-# Recode numeric education codes into descriptive labels
+#Recode numeric education codes into descriptive labels
 df_cov <- df_cov %>%
   mutate(mat_ed_cat = recode(mat_ed_cat,
                              `0` = "Never attended / Kindergarten only",
@@ -133,12 +132,12 @@ df_cov <- df_cov %>%
     mat_ed_cat %in% c("Professional school degree","Doctoral degree") ~ "Professional or Doctoral degree"
   ))
 
-# Check the result
+#Check the result
 table(df_cov$mat_ed_6cat)
 ##Convert as factors
 df_cov$mat_ed_6cat <- factor(df_cov$mat_ed_6cat)
 
-# Set reference group (e.g., Bachelors)
+#Set reference group
 df_cov$mat_ed_6cat <- relevel(df_cov$mat_ed_6cat, ref = "Bachelor's degree")
 
 ###Plot results
@@ -157,20 +156,20 @@ ggplot(df_cov, aes(x = mat_ed_6cat)) +
 df_cov <- df_cov %>%
   mutate(mat_ed_5cat = case_when(
     mat_ed_6cat %in% c("less than HS", "HS or GED") ~ "HS or Less",
-    TRUE ~ mat_ed_6cat  # keep all other categories the same
+    TRUE ~ mat_ed_6cat  #keep all other categories the same
   ))
 
 
 
-# Check the result
+#Check the result
 table(df_cov$mat_ed_5cat)
 ##Convert as factors
 df_cov$mat_ed_5cat <- factor(df_cov$mat_ed_5cat)
-# Set reference group (e.g., Bachelors)
+#Set reference group (e.g., Bachelors)
 df_cov$mat_ed_5cat <- relevel(df_cov$mat_ed_5cat, ref = "Bachelor's degree")
 
 ###Plot results
-# Bar plot with counts labeled
+#Bar plot with counts labeled
 ggplot(df_cov, aes(x = mat_ed_5cat)) +
   geom_bar(fill = "steelblue") +
   geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
@@ -238,7 +237,7 @@ df_cov <- df_cov %>%
 table(df_cov$PACES_outlier)
 
 
-# ####Let's remove that one person
+####Let's remove that one person
 df_cov <- df_cov %>%
   filter(!PACES_outlier | is.na(PACES_outlier))
 
@@ -262,11 +261,11 @@ df_cov <- df_cov %>%
 
 ###This will rename to "V2_T2_XXXX"
 df_cov <- df_cov %>%
-  # First rename the BIBSNet columns
+  #First rename the BIBSNet columns
   rename_with(~ str_replace(.x,
                             "^img_bibsnet_space-T2w_desc-aseg_volumes_(.*)$",
                             "V2_T2_vol_\\1")) %>%
-  # Then replace any "-" with "_"
+  #Then replace any "-" with "_"
   rename_with(~ str_replace_all(.x, "-", "_"))
 
 
@@ -278,7 +277,7 @@ df_cov <- df_cov %>%
 
 
 ###Rescale
-# Histogram + density
+#Histogram + density
 ggplot(df_cov, aes(ICV_raw)) +
   geom_histogram(bins = 30, fill = "steelblue", alpha = 0.7) +
   geom_density(color = "red", linewidth = 1) +
@@ -293,7 +292,7 @@ df_cov <- df_cov %>%
   mutate(ICV_z = scale(ICV_raw))
 
 
-# Remove columns by name to avoid confusion
+#Remove columns by name to avoid confusion
 df_cov <- df_cov %>%
   dplyr::select(
     -V2_T2_vol_3rd_Ventricle,

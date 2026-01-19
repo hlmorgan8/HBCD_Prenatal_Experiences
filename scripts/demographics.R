@@ -5,7 +5,7 @@
 ##                                                                            ##
 #################################################################################
 
-################Hannah Morgan 04NOv2025#########################################
+################Hannah Morgan 19JAN2026#########################################
 ##                                                                            ##
 ################################################################################
 
@@ -69,12 +69,12 @@ sd(df_cov$V2_T2_vol_adjusted_age, na.rm = TRUE)
 vars <- c("pex_bm_apa_apa2_depr_promisrawscore", "PACES", "V2_T2_vol_adjusted_age",
           "maternal_age_delivery", "mat_ed_5cat", "child_sex", "ICV_z")
 
-# Separate continuous and categorical
+#Separate continuous and categorical
 cont_vars <- c("pex_bm_apa_apa2_depr_promisrawscore", "PACES", 
                "V2_T2_vol_adjusted_age", "maternal_age_delivery", "ICV_z")
 cat_vars <- c("mat_ed_5cat", "child_sex")
 
-# Continuous variable summary (M, SD, Range)
+#Continuous variable summary (M, SD, Range)
 cont_summary <- df_cov %>%
   select(all_of(cont_vars)) %>%
   psych::describe() %>%
@@ -82,7 +82,7 @@ cont_summary <- df_cov %>%
   mutate(across(where(is.numeric), round, 2)) %>%
   tibble::rownames_to_column("Variable")
 
-# Categorical variable summary (N, %)
+#Categorical variable summary (N, %)
 cat_summary <- df_cov %>%
   select(all_of(cat_vars)) %>%
   lapply(function(x) {
@@ -95,7 +95,7 @@ cat_summary <- df_cov %>%
   }) %>%
   bind_rows(.id = "Covariate")
 
-# Optional: rename variables for readability
+#Optional: rename variables for readability
 nice_names <- c(
   pex_bm_apa_apa2_depr_promisrawscore = "Prenatal Depression Score",
   PACES = "Protective Factors (PACES)",
@@ -109,7 +109,7 @@ nice_names <- c(
 cont_summary$Variable <- nice_names[cont_summary$Variable]
 cat_summary$Covariate <- nice_names[cat_summary$Covariate]
 
-# Show results
+#Show results
 kable(cont_summary, caption = "Table 1. Descriptive Statistics for Continuous Covariates (M, SD, Range)", 
       digits = 2, align = "lcccc")
 
