@@ -192,7 +192,7 @@ df_cov <- df_cov %>%
   mutate(
     across(pex_bm_apa_2_depr_001:pex_bm_apa_2_depr_008, ~as.numeric(.)),
     apa_2_depr_sum_score = rowSums(across(pex_bm_apa_2_depr_001:pex_bm_apa_2_depr_008),
-                                   na.rm = FALSE)   # <-- critical
+                                   na.rm = FALSE)   
   )
 
 
