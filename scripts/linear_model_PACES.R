@@ -5,7 +5,7 @@
 ##                                                                            ##
 #################################################################################
 
-################Hannah Morgan 24OCT2025#########################################
+################Hannah Morgan 19JAN2026#########################################
 ##                                                                            ##
 ################################################################################
 
@@ -57,13 +57,13 @@ outcomes <- c(4:26)
 
 
 
-# Reshape data long
+#Reshape data long
 df_long <- df_cov %>%
   dplyr::select(all_of(outcomes)) %>%
   tidyr::pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
 
 
-# Faceted histograms
+#Faceted histograms
 ggplot(df_long, aes(x = value)) +
   geom_histogram(bins = 30, fill = "steelblue", color = "white") +
   facet_wrap(~ variable, scales = "free") +
@@ -110,28 +110,26 @@ levels(df_cov$child_sex) #1 is Male, 0 is female
 roi_outcomes <- colnames(df_cov)[4:26] 
 
 
-#
-#Function to fit model for one ROI
-#---------------------------------------
+##Function to fit model for one ROI
 fit_lmem <- function(outcome, data, outdir = "output") {
-  # make sure output folder exists
+  #Make sure output folder exists
   if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
   
-  # build formula dynamically
+  #Build formula dynamically
   fml <- as.formula(
     paste0(outcome, "~ PACES + V2_T2_vol_adjusted_age + maternal_age_delivery + child_sex + ICV_z + (1|site)") 
   )
   
-  ##covariates = mat_ed_5cat 
+  ##Covariates = mat_ed_5cat 
   
-  # fit model
+  #Fit model
   m <- lmer(fml, data = data)
   
-  # save full summary to text file
+  #Save full summary to text file
   outfile <- file.path(outdir, paste0(outcome, "_model_summary.txt"))
   capture.output(summary(m), file = outfile)
   
-  # still return tidy PACES effect for summary table
+  #Still return tidy PACES effect for summary table
   broom.mixed::tidy(m, effects = "fixed", conf.int = TRUE, p.value = TRUE) %>%
     filter(term == "PACES") %>%
     mutate(outcome = outcome)
@@ -149,38 +147,32 @@ fit_lmem <- function(outcome, data, outdir = "output") {
 
 
 
-#---------------------------------------
-# 3. Run across all ROIs
-#---------------------------------------
+#Run across all ROIs
 results <- map_dfr(roi_outcomes, fit_lmem, data = df_cov)
 
 
 
-#---------------------------------------
-# 4. Flag significant PACES effects - UNCORRECTED
-#---------------------------------------
+######################Flag significant PACES effects - UNCORRECTED####################
 sig_results <- results %>%
   filter(p.value < 0.05) %>%
   arrange(p.value)
 
-#Inspect
+#Seeing output
 results
 sig_results
 
 
 
-#---------------------------------------
-# 5. Add multiple correction adjustment (Benjamini-Hochberg)
-#---------------------------------------
+###################Add multiple correction adjustment (BH)############################
 results <- results %>%
   mutate(p_adj = p.adjust(p.value, method = "BH"))
 
-# Flag significant results after FDR
+#Flag significant results after FDR
 sig_results_adj <- results %>%
   filter(p_adj < 0.05) %>%
   arrange(p_adj)
 
-# Inspect
+#Seeing output
 results
 sig_results_adj
 
@@ -188,12 +180,12 @@ sig_results_adj
 
 
 #####################Saving model output with all effects######################################
-# Define your output folder
+#Define your output folder
 my_output_folder <- here("output", "PACES", "Reduced_Model_Output")  #Change name here depending on how you run your model
 
 #Directories: Full_Model_Output
 
-# Run across all ROIs to save them in the output folder
+#Run across all ROIs to save them in the output folder
 results <- map_dfr(roi_outcomes, fit_lmem, data = df_cov, outdir = my_output_folder)
 
 
@@ -202,23 +194,20 @@ results <- map_dfr(roi_outcomes, fit_lmem, data = df_cov, outdir = my_output_fol
 
 
 ###If you want to save just the significant effects
-# Make sure output folder exists
+#Make sure output folder exists
 my_output_folder <- here("output", "PACES", "Reduced_Model_Output")
 if (!dir.exists(my_output_folder)) dir.create(my_output_folder, recursive = TRUE)
 
-#---------------------------------------
-# 1. Save ALL results (including p_adj column)
-#---------------------------------------
+
+#Save ALL results (including p_adj column)
 write_csv(results, file = file.path(my_output_folder, "All_ROI_Results_with_p_adj.csv"))
 
-#---------------------------------------
-# 2. Save significant results UNCORRECTED
-#---------------------------------------
+
+#Save significant results UNCORRECTED
 write_csv(sig_results, file = file.path(my_output_folder, "Significant_ROI_Results_Uncorrected.csv"))
 
-#---------------------------------------
-# 3. Save significant results AFTER FDR correction
-#---------------------------------------
+
+#Save significant results AFTER FDR correction
 write_csv(sig_results_adj, file = file.path(my_output_folder, "Significant_ROI_Results_FDR.csv"))
 
 
@@ -232,10 +221,10 @@ write_csv(sig_results_adj, file = file.path(my_output_folder, "Significant_ROI_R
 ##
 #################################################################################
 
-# Fit models for all ROIs and combine
+#Fit models for all ROIs and combine
 results <- purrr::map_dfr(roi_outcomes, ~fit_lmem(.x, df_cov))
 
-# Make ROI names nicer (optional)
+#Make ROI names nicer (optional)
 results <- results %>%
   mutate(roi = gsub("V2_T2_vol_", "", outcome),
          roi = gsub("_", " ", roi))
@@ -268,18 +257,17 @@ ggplot(results, aes(x = estimate, y = reorder(roi, estimate))) +
 
 
 ##Run again
-#---------------------------------------
-# 5. Add multiple correction adjustment (Benjamini-Hochberg)
-#---------------------------------------
+#Add multiple correction adjustment (Benjamini-Hochberg)
+
 results <- results %>%
   mutate(p_adj = p.adjust(p.value, method = "BH"))
 
-# Flag significant results after FDR
+#Flag significant results after FDR
 sig_results_adj <- results %>%
   filter(p_adj < 0.05) %>%
   arrange(p_adj)
 
-# Inspect
+#Seeing output
 results
 sig_results_adj
 
@@ -341,7 +329,7 @@ p_other <- ggplot(
   theme_minimal(base_size = 14)
 
 
-##combine plots
+##Combine plots
 
 p_cereb + p_other +
   plot_layout(guides = "collect") &
@@ -404,9 +392,8 @@ ggplot(results, aes(y = estimate, x = reorder(roi, estimate))) +
 ##################################################################################
 
 
-# ----------------------------------------------------------
-# 1. Function: Fit LMEM & return full fixed-effect table
-# ----------------------------------------------------------
+#Function: Fit LMEM & return full fixed-effect table
+
 
 fit_lmem_full <- function(outcome, data) {
   
@@ -422,29 +409,27 @@ fit_lmem_full <- function(outcome, data) {
     mutate(outcome = outcome)
 }
 
-# ----------------------------------------------------------
-# 2. Apply the function across all ROI outcomes (one loop)
-# ----------------------------------------------------------
+
+#Apply the function across all ROI outcomes (one loop)
 
 roi_outcomes <- colnames(df_cov)[4:26]   # your ROI variables
 
 all_fx <- map_dfr(roi_outcomes, ~fit_lmem_full(.x, df_cov))
 
-# all_fx now contains:
+#all_fx now contains:
 # term | estimate | SE | df | p.value | conf.low | conf.high | outcome
 
-# ----------------------------------------------------------
-# 3. Apply FDR correction PER predictor across ROIs
-# ----------------------------------------------------------
+
+#Apply FDR correction PER predictor across ROIs
+
 
 all_fx <- all_fx %>%
   group_by(term) %>% 
   mutate(p_adj = p.adjust(p.value, method = "BH")) %>%
   ungroup()
 
-# ----------------------------------------------------------
-# 4. Write one corrected results file per ROI
-# ----------------------------------------------------------
+
+#Write one corrected results file per ROI
 
 output_dir <- "output/roi_corrected_results"
 if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
@@ -458,23 +443,22 @@ for (roi in roi_outcomes) {
   capture.output(print(roi_table), file = outfile)
 }
 
-# ----------------------------------------------------------
-# 5. Also write a master CSV if needed
-# ----------------------------------------------------------
+
+#Also write a master CSV if needed
+
 
 write_csv(all_fx, "output/PACES/Reduced_Model_Output/COVARIATES_all_ROIs_corrected_fixed_effects.csv")
 
 
 
-# ----------------------------------------------------------
-# 6. Create APA-style tables for every predictor (papaja)
-# ----------------------------------------------------------
+
+#Create APA-style tables for every predictor 
 
 
-# All fixed-effect predictors in your model
+#All fixed-effect predictors in your model
 predictor_terms <- unique(all_fx$term)
 
-# Loop through each predictor & produce an APA table
+#Loop through each predictor & produce an APA table
 for (term_i in predictor_terms) {
   
   message("\n\n==============================")
@@ -493,7 +477,7 @@ for (term_i in predictor_terms) {
       `p (FDR)` = p_adj
     )
   
-  # Print APA-style table for copy/paste into manuscript
+  #Print APA-style table for copy/paste into manuscript
   print(
     apa_table(
       apa_df,
