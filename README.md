@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-To reproduce results from JAMA Peds Paper:
+To reproduce results from DCN Paper:
 ```
 Rscript load_data.R 
 Rscript build_variables.R 
