@@ -1,4 +1,4 @@
-# Protective Prenatal Experiences Project 
+# Prenatal Experiences Project 
 
 ## Getting Started
 
