@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-To reproduce results from DCN Paper:
+To reproduce results:
 ```
 Rscript load_data.R 
 Rscript build_variables.R 
