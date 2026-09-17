@@ -15,16 +15,12 @@
 library(dplyr)
 library(arrow)
 
-##This will load into the data directory to grab the data but assumes you have a symbolic link - the below will help you set that up
-###to create this, go to Terminal and enter and log into the in VACC (HPC specific to UVM) 
-#####cd into your project's raw data folder
-######  cd /XX/XX/XX/data/raw
 
 
 ##This is loading in data from your data dictionary
-###If you are in scratch space use this:  "data/raw/phenotype/"
+###If you are in scratch space use this:  "#/#/phenotype/"
 
-load_data <- function(fname, base_path = "data/raw/2.0/rawdata/phenotype/"){
+load_data <- function(fname, base_path = "#/#/2.0/#/#/"){
   fpath <- paste0(base_path, fname)
   arrow::read_parquet(fpath)
 }
@@ -42,8 +38,9 @@ irritability <- load_data("mh_cg_mapdb__inf.parquet")
 family_hx <- load_data("pex_bm_psych.parquet")
 medication <- load_data("pex_bm_health_preg__meds.parquet")
 quality_control_mri <- load_data("img_mriqc_T2w.parquet")
-
-
+pregnancy_history <- load_data("pex_bm_health_preg__healthhx.parquet")
+infant_health <- load_data("pex_bm_healthv2_inf.parquet")
+child_dem <- load_data("sed_bm_demo_child.parquet")
 
 
 
@@ -88,10 +85,10 @@ paces_data <- gather_paces_data(
 
 #Save the combined data frame
 ##PACES Data
-#arrow::write_parquet(paces_data, "data/processed/Protective_Factors_Data_2_17Feb2026.parquet")
+#arrow::write_parquet(paces_data, "folder/here/###.parquet")
 
 #PROMIS Data
-arrow::write_parquet(paces_data, "data/processed/Protective_Factors_Data_APA-Postnatal_2_12MAR2026.parquet")
+#arrow::write_parquet(paces_data, "folder/here/###.parquet")
 
 
 
@@ -141,162 +138,7 @@ edinburgh_data <- gather_paces_data(
 #Save the combined data frame
 
 #PROMIS Data
-arrow::write_parquet(edinburgh_data, "data/processed/Protective_Factors_Data_EDINBURGH_Session2_2_11MAR2026.parquet")
-
-
-
-
-
-
-
-
-
-
-#################################################################################
-##IBQ Data
-
-
-#This gathers the measures into one based on variables that should match up
-gather_paces_data <- function(structure_t2, static_dem, apa_depression, temperament) {
-  structure_t2 %>%
-    filter(session_id == 'ses-V02') %>%
-    select(-session_id) %>%
-    left_join(
-      static_dem %>%
-        filter(session_id == 'ses-V02') %>%
-        select(-session_id)
-    ) %>%
-    left_join(
-      apa_depression %>%
-        filter(session_id == 'ses-V01') %>%
-        select(-session_id)
-    ) %>%
-    left_join(
-      temperament %>%
-        filter(session_id == 'ses-V03') %>%
-        select(-session_id)
-    ) %>%
-    left_join(
-      paces %>%     #change to paces
-        filter(session_id == 'ses-V01') %>%
-        select(-session_id)
-    )
-}
-
-
-
-#This makes the final data frame
-temperament_data <- gather_paces_data(
-  structure_t2,
-  static_dem,
-  apa_depression,
-  temperament
-)
-
-
-#Save the combined data frame
-
-#IBQ Data
-arrow::write_parquet(temperament_data, "data/processed/Protective_Factors_Data_IBQ_2_04MAR2026.parquet")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#################################################################################
-#MAPS Data
-
-
-#This gathers the measures into one based on variables that should match up
-gather_paces_data <- function(structure_t2, static_dem, apa_depression, irritability) {
-  structure_t2 %>%
-    filter(session_id == 'ses-V02') %>%
-    select(-session_id) %>%
-    left_join(
-      static_dem %>%
-        filter(session_id == 'ses-V02') %>%
-        select(-session_id)
-    ) %>%
-    left_join(
-      apa_depression %>%
-        filter(session_id == 'ses-V01') %>%
-        select(-session_id)
-    ) %>%
-    left_join(
-      irritability %>%
-        filter(session_id == 'ses-V03') %>%
-        select(-session_id)
-    ) %>%
-    left_join(
-      paces %>%     #change to paces
-        filter(session_id == 'ses-V01') %>%
-        select(-session_id)
-    )
-}
-
-
-
-#This makes the final data frame
-irritability_data <- gather_paces_data(
-  structure_t2,
-  static_dem,
-  apa_depression,
-  irritability
-)
-
-
-#Save the combined data frame
-
-#MAPS Data
-arrow::write_parquet(irritability_data, "data/processed/Protective_Factors_Data_MAPS_2_09MAR2026.parquet")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+arrow::write_parquet(edinburgh_data, "folder/here/###.parquet")
 
 
 
@@ -364,10 +206,10 @@ paces_data <- gather_paces_data(
 
 #Save the combined data frame
 ##PACES Data
-#arrow::write_parquet(paces_data, "data/processed/Protective_Factors_Data_2_17Feb2026.parquet")
+#arrow::write_parquet(paces_data, "folder/here/###.parquet")
 
 #PROMIS Data
-arrow::write_parquet(paces_data, "data/processed/Protective_Factors_Data_APA_Pre_Postnatal_2_12MAR2026.parquet")
+arrow::write_parquet(paces_data, "folder/here/###.parquet")
 
 
 
@@ -448,7 +290,7 @@ family_hx_data <- gather_paces_data(
 #Save the combined data frame
 
 #Fanily HX Data
-arrow::write_parquet(family_hx_data, "data/processed/Protective_Factors_Data_Family_HX_2_16MAR2026.parquet")
+arrow::write_parquet(family_hx_data, "folder/here/###.parquet")
 
 
 
@@ -527,7 +369,7 @@ medication_data <- gather_paces_data(
 #Save the combined data frame
 
 #Medication Data
-arrow::write_parquet(medication_data, "data/processed/Protective_Factors_Data_Medication_2_18MAR2026.parquet")
+arrow::write_parquet(medication_data, "folder/here/###.parquet")
 
 
 
@@ -587,12 +429,194 @@ paces_data <- gather_paces_data(
 
 #Save the combined data frame
 ##PACES Data
-#arrow::write_parquet(paces_data, "data/processed/Protective_Factors_Data_2_17Feb2026.parquet")
+#arrow::write_parquet(paces_data, "folder/here/###.parquet")
 
 #PROMIS Data
-arrow::write_parquet(paces_data, "data/processed/Protective_Factors_Data_APA_Quality_Control_2_08APR2026.parquet")
+arrow::write_parquet(paces_data, "folder/here/###.parquet")
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################################################################################
+##
+##                    DATA FRAMES FOR SENSITIVITY ANALYSES
+##
+######################################################################################
+
+
+
+
+
+
+#########################################################################################
+
+##Parity data
+
+#This gathers the measures into one based on variables that should match up
+gather_paces_data <- function(structure_t2, static_dem, apa_depression, pregnancy_history) {
+  structure_t2 %>%
+    filter(session_id == 'ses-V02') %>%
+    select(-session_id) %>%
+    left_join(
+      static_dem %>%
+        filter(session_id == 'ses-V02') %>%
+        select(-session_id)
+    ) %>%
+    left_join(
+      apa_depression %>%
+        filter(session_id == 'ses-V01') %>%
+        select(-session_id)
+    ) %>%
+    left_join(
+      pregnancy_history %>%
+        filter(session_id == 'ses-V01') %>%
+        select(-session_id)
+    ) %>%
+    left_join(
+      paces %>%     #change to paces
+        filter(session_id == 'ses-V01') %>%
+        select(-session_id)
+    )
+}
+
+
+
+#This makes the final data frame
+family_hx_data <- gather_paces_data(
+  structure_t2,
+  static_dem,
+  apa_depression,
+  pregnancy_history
+)
+
+
+#Save the combined data frame
+
+#Parity Data
+arrow::write_parquet(family_hx_data, "folder/here/###.parquet")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#########################################################################################
+
+##Birthweight from Health Inf V2 data
+
+#This gathers the measures into one based on variables that should match up
+gather_paces_data <- function(structure_t2, static_dem, apa_depression, pregnancy_history, infant_health) {
+  structure_t2 %>%
+    filter(session_id == 'ses-V02') %>%
+    select(-session_id) %>%
+    left_join(
+      static_dem %>%
+        filter(session_id == 'ses-V02') %>%
+        select(-session_id)
+    ) %>%
+    left_join(
+      apa_depression %>%
+        filter(session_id == 'ses-V01') %>%
+        select(-session_id)
+    ) %>%
+    left_join(
+      pregnancy_history %>%
+        filter(session_id == 'ses-V01') %>%
+        select(-session_id)
+    ) %>%
+    left_join(
+      infant_health %>%
+        filter(session_id == 'ses-V02') %>%
+        select(-session_id)
+    ) %>%
+    left_join(
+      paces %>%     #change to paces
+        filter(session_id == 'ses-V01') %>%
+        select(-session_id)
+    )
+}
+
+
+
+#This makes the final data frame
+infant_health_data <- gather_paces_data(
+  structure_t2,
+  static_dem,
+  apa_depression,
+  pregnancy_history,
+  infant_health
+)
+
+
+#Save the combined data frame
+
+#Parity Data
+arrow::write_parquet(infant_health_data, "folder/here/###.parquet")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+####Check child demographics for birth parent%
+table(child_dem$sed_bm_demo_child__relat_001)
 
 
