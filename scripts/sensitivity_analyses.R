@@ -1,7 +1,7 @@
 #################################################################################
 ##                                                                            ##
 ##                      Protective Factors Project                            ##
-##                        Follow-Ups                                          ##
+##                       Reviewer Follow-Ups                                  ##
 ##                                                                            ##
 #################################################################################
 
@@ -33,15 +33,6 @@ library(psych)
 #Read in csv if preferred, but warning that it will not have variables saved properly!!!!
 #df_cov <- read.csv("data/processed/Protective_Factors_Data_Cleaned_27OCT2025.csv")
 
-
-#Read the RDS file and assign it to a variable - this should have variables saved properly
-##Protective_Factors_Data_Cleaned_2_17FEB2026.Rds - sites removed, without PROMIS
-##Protective_Factors_Data_Cleaned_2_20FEB2026.Rds - without PROMIS
-###Protective_Factors_Data_PROMIS_Cleaned_2_20FEB2026.Rds - sites removed, with PROMIS, outliers removed PACEs
-
-
-##Critical Dfs
-#df_cov <- readRDS("data/processed/Protective_Factors_Data_APA_Ses2_Cleaned_2_12MAR2026.Rds") #Postanatal APA2
 df_cov <- readRDS("data/processed/Protective_Factors_Data_APA_PROMIS_Cleaned_2_11MAR2026.Rds") #Prenatal APA2
 
 #################################################################################
@@ -182,7 +173,7 @@ fit_lmem <- function(outcome, data, outdir = "output") {
   
   #Build formula dynamically
   fml <- as.formula(
-    paste0(outcome, " ~ pex_bm_apa_apa2_depr_promisrawscore + child_sex + mat_ed_cat + V2_T2_vol_adjusted_age + maternal_age_delivery + ICV_z + (1|site)") 
+    paste0(outcome, " ~ pex_bm_apa_apa2_depr_promisrawscore + sed_basic_demographics_gestational_age_delivery + child_sex + mat_ed_cat + V2_T2_vol_adjusted_age + maternal_age_delivery + ICV_z + (1|site)") 
   )
   
   ##Covariates = mat_ed_5cat   PACES  pex_bm_apa_apa2_depr_promisrawscore maternal_age_delivery
@@ -200,7 +191,7 @@ fit_lmem <- function(outcome, data, outdir = "output") {
   
   #Still return tidy Depression effect for summary table
   broom.mixed::tidy(m, effects = "fixed", conf.int = TRUE, p.value = TRUE) %>%
-    filter(term == "dep_log") %>%  #if you want to look at interaction: pex_bm_apa_apa2_depr_promisrawscore:child_sex0
+    filter(term == "pex_bm_apa_apa2_depr_promisrawscore") %>%  #if you want to look at interaction: pex_bm_apa_apa2_depr_promisrawscore:child_sex0 or dep_log
     mutate(outcome = outcome)
 }
 
@@ -245,6 +236,112 @@ sig_results_adj <- results %>%
 #Seeing output
 results
 sig_results_adj
+
+
+
+
+
+###############################For sensitivity analyses supplemental
+##################saving this output with parity to address R3#######################
+#####THIS IS FOR GESTATIONAL AGE APA/PROMIS ANALYSES
+#pex_bm_apa_gestational_age
+#####USE for prematurity
+##sed_basic_demographics_gestational_age_delivery
+
+
+
+fit_lmem_full <- function(outcome, data, outdir = "output") {
+  
+  if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
+  
+  fml <- as.formula(
+    paste0(
+      outcome,
+      " ~ pex_bm_apa_apa2_depr_promisrawscore +
+         V2_T2_vol_adjusted_age +
+         child_sex +
+         mat_ed_cat +
+         sed_basic_demographics_gestational_age_delivery +    
+         maternal_age_delivery +
+         ICV_z +
+         (1|site)"
+    )
+  )
+  
+  m <- lmerTest::lmer(fml, data = data)
+  
+  broom.mixed::tidy(
+    m,
+    effects = "fixed",
+    conf.int = TRUE,
+    p.value = TRUE
+  ) %>%
+    mutate(outcome = outcome)
+}
+
+
+results_full <- map_dfr(
+  roi_outcomes,
+  fit_lmem_full,
+  data = df_cov
+)
+
+results_full <- results_full %>%
+  left_join(
+    results %>%
+      select(outcome, p_adj),
+    by = "outcome"
+  )
+
+
+
+
+results_full <- results_full %>%
+  mutate(
+    p_FDR = ifelse(
+      term == "pex_bm_apa_apa2_depr_promisrawscore",
+      p_adj,
+      NA_real_
+    )
+  ) %>%
+  select(
+    outcome,
+    term,
+    estimate,
+    std.error,
+    conf.low,
+    conf.high,
+    p.value,
+    p_FDR, 
+    df
+  )
+
+results_full_sig <- results_full %>%
+  group_by(outcome) %>%
+  filter(any(term == "pex_bm_apa_apa2_depr_promisrawscore" & p_FDR < 0.05)) %>%
+  ungroup()
+
+
+
+#write.csv(results_full_sig, "output/GestationalAgeAPA_results_sigROIs_22SEP2026.csv", row.names = FALSE)
+#write.csv(results_full_sig, "output/Prematurity_results_sigROIs_22SEP2026.csv", row.names = FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -403,6 +500,87 @@ sig_results_adj
 
 
 
+##################saving this output with parity to address R3#######################
+#####THIS IS STILL PARITY ANALYSES
+
+
+fit_lmem_full <- function(outcome, data, outdir = "output") {
+  
+  if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
+  
+  fml <- as.formula(
+    paste0(
+      outcome,
+      " ~ pex_bm_apa_apa2_depr_promisrawscore +
+         V2_T2_vol_adjusted_age +
+         child_sex +
+         mat_ed_cat +
+         pex_bm_health_preg__healthhx__preghx_001 +
+         maternal_age_delivery +
+         ICV_z +
+         (1|site)"
+    )
+  )
+  
+  m <- lmerTest::lmer(fml, data = data)
+  
+  broom.mixed::tidy(
+    m,
+    effects = "fixed",
+    conf.int = TRUE,
+    p.value = TRUE
+  ) %>%
+    mutate(outcome = outcome)
+}
+
+
+results_full <- map_dfr(
+  roi_outcomes,
+  fit_lmem_full,
+  data = df_cov
+)
+
+results_full <- results_full %>%
+  left_join(
+    results %>%
+      select(outcome, p_adj),
+    by = "outcome"
+  )
+
+
+
+
+results_full <- results_full %>%
+  mutate(
+    p_FDR = ifelse(
+      term == "pex_bm_apa_apa2_depr_promisrawscore",
+      p_adj,
+      NA_real_
+    )
+  ) %>%
+  select(
+    outcome,
+    term,
+    estimate,
+    std.error,
+    conf.low,
+    conf.high,
+    p.value,
+    p_FDR, 
+    df
+  )
+
+results_full_sig <- results_full %>%
+  group_by(outcome) %>%
+  filter(any(term == "pex_bm_apa_apa2_depr_promisrawscore" & p_FDR < 0.05)) %>%
+  ungroup()
+
+
+
+#write.csv(results_full_sig, "output/Parity_results_sigROIs_22SEP2026.csv", row.names = FALSE)
+
+
+
 
 
 
@@ -540,7 +718,7 @@ sd(df_cov_depr_removed$pex_bm_health_preg__healthhx__preghx_001, na.rm = TRUE)
 roi_outcomes <- colnames(df_cov)[4:24] 
 
 
-
+###PLEASE NOTE THAT THIS IS WHERE YOU CAN ADD ALL THREE COVARIATES 
 
 
 
@@ -556,7 +734,9 @@ fit_lmem <- function(outcome, data, outdir = "output") {
   
   #Build formula dynamically
   fml <- as.formula(
-    paste0(outcome, " ~ pex_bm_apa_apa2_depr_promisrawscore + child_sex + mat_ed_cat + V2_T2_vol_adjusted_age + birth_weight_oz_total + maternal_age_delivery + ICV_z + (1|site)") 
+    paste0(outcome, " ~ pex_bm_apa_apa2_depr_promisrawscore + child_sex + mat_ed_cat + V2_T2_vol_adjusted_age +
+            birth_weight_oz_total +
+            maternal_age_delivery + ICV_z + (1|site)") 
   )
   
   ##Covariates = mat_ed_5cat   PACES  pex_bm_apa_apa2_depr_promisrawscore maternal_age_delivery
@@ -621,6 +801,84 @@ sig_results_adj <- results %>%
 #Seeing output
 results
 sig_results_adj
+
+
+
+
+
+########################FOR SUPPLEMENTALS
+###########Birthweight
+
+fit_lmem_full <- function(outcome, data, outdir = "output") {
+  
+  if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
+  
+  fml <- as.formula(
+    paste0(
+      outcome,
+      " ~ pex_bm_apa_apa2_depr_promisrawscore +
+         V2_T2_vol_adjusted_age +
+         child_sex +
+         mat_ed_cat +
+         birth_weight_oz_total +    
+         maternal_age_delivery +
+         ICV_z +
+         (1|site)"
+    )
+  )
+  
+  m <- lmerTest::lmer(fml, data = data)
+  
+  broom.mixed::tidy(
+    m,
+    effects = "fixed",
+    conf.int = TRUE,
+    p.value = TRUE
+  ) %>%
+    mutate(outcome = outcome)
+}
+
+
+results_full <- map_dfr(
+  roi_outcomes,
+  fit_lmem_full,
+  data = df_cov
+)
+
+results_full <- results_full %>%
+  left_join(
+    results %>%
+      select(outcome, p_adj),
+    by = "outcome"
+  )
+
+
+
+
+results_full <- results_full %>%
+  mutate(
+    p_FDR = ifelse(
+      term == "pex_bm_apa_apa2_depr_promisrawscore",
+      p_adj,
+      NA_real_
+    )
+  ) %>%
+  select(
+    outcome,
+    term,
+    estimate,
+    std.error,
+    conf.low,
+    conf.high,
+    p.value,
+    p_FDR, 
+    df
+  )
+
+results_full_sig <- results_full %>%
+  group_by(outcome) %>%
+  filter(any(term == "pex_bm_apa_apa2_depr_promisrawscore" & p_FDR < 0.05)) %>%
+  ungroup()
 
 
 
