@@ -20,25 +20,12 @@ library(knitr)
 
 #Read the RDS file and assign it to a variable - this should have variables saved properly
 
-df_cov <- readRDS("data/processed/Protective_Factors_Data_APA_PROMIS_Cleaned_2_11MAR2026.Rds")
-#df_cov <- readRDS("data/processed/Protective_Factors_Data_APA_PrePostNatal_Cleaned_2_12MAR2026.Rds")
-#df_cov <- readRDS("data/processed/Protective_Factors_Data_APA_Ses2_Cleaned_2_12MAR2026.Rds")
-
-
-#df_cov <- readRDS("data/processed/Protective_Factors_Data_PROMIS_Cleaned_2_24FEB2026.Rds")
-##Protective_Factors_Data_Cleaned_2_17FEB2026.Rds - sites removed, without PROMIS
-###Protective_Factors_Data_PROMIS_Cleaned_2_20FEB2026.Rds - sites removed, with PROMIS, outliers removed PACEs
+df_cov <- readRDS("##/##/Protective_Factors_Data_APA_PROMIS_Cleaned_2_11MAR2026.Rds")
 
 
 
 
-
-
-
-
-
-
-##For full transparency (this removes NAs of depression)
+##For full transparency/checking (this removes NAs of depression)
 df_cov <- df_cov %>%
   filter(!is.na(pex_bm_apa_apa2_depr_promisrawscore))
 
@@ -53,11 +40,16 @@ summary(df_cov$child_sex)
 summary(df_cov$V2_T2_vol_adjusted_age)
 mean(df_cov$V2_T2_vol_adjusted_age, na.rm = TRUE)
 sd(df_cov$V2_T2_vol_adjusted_age, na.rm = TRUE)
+sum(is.na(df_cov$V2_T2_vol_adjusted_age))
+mean(is.na(df_cov$V2_T2_vol_adjusted_age)) * 100
 
 
 summary(df_cov$pex_bm_apa_apa2_depr_promisrawscore)
 mean(df_cov$pex_bm_apa_apa2_depr_promisrawscore, na.rm = TRUE)
 sd(df_cov$pex_bm_apa_apa2_depr_promisrawscore, na.rm = TRUE)
+sum(is.na(df_cov$pex_bm_apa_apa2_depr_promisrawscore))
+mean(is.na(df_cov$pex_bm_apa_apa2_depr_promisrawscore)) * 100
+
 
 summary(df_cov$sed_bm_strsup_total_score)
 mean(df_cov$sed_bm_strsup_total_score, na.rm = TRUE)
@@ -68,7 +60,47 @@ summary(df_cov$sed_bm_strsup_total_raw_score)
 mean(df_cov$sed_bm_strsup_total_raw_score, na.rm = TRUE)
 sd(df_cov$sed_bm_strsup_total_raw_score, na.rm = TRUE)
 
+summary(df_cov$V2_T2_vol_candidate_age)
+mean(df_cov$V2_T2_vol_candidate_age, na.rm = TRUE)
+sd(df_cov$V2_T2_vol_candidate_age, na.rm = TRUE)
+sum(is.na(df_cov$V2_T2_vol_candidate_age))
+mean(is.na(df_cov$V2_T2_vol_candidate_age)) * 100
 
+
+summary(df_cov$pex_bm_apa_gestational_age)
+mean(df_cov$pex_bm_apa_gestational_age, na.rm = TRUE)
+sd(df_cov$pex_bm_apa_gestational_age, na.rm = TRUE)
+sum(is.na(df_cov$pex_bm_apa_gestational_age))
+mean(is.na(df_cov$pex_bm_apa_gestational_age)) * 100
+
+##there are some low GA, let's check that quickly
+sum(df_cov$pex_bm_apa_gestational_age < 13, na.rm = TRUE)
+#what site?
+table(df_cov$site[df_cov$pex_bm_apa_gestational_age < 13])
+
+
+
+summary(df_cov$maternal_age_delivery)
+mean(df_cov$maternal_age_delivery, na.rm = TRUE)
+sd(df_cov$maternal_age_delivery, na.rm = TRUE)
+sum(is.na(df_cov$maternal_age_delivery))
+mean(is.na(df_cov$maternal_age_delivery)) * 100
+
+
+
+
+summary(df_cov$ICV_raw)
+mean(df_cov$ICV_raw, na.rm = TRUE)
+sd(df_cov$ICV_raw, na.rm = TRUE)
+sum(is.na(df_cov$ICV_raw))
+mean(is.na(df_cov$ICV_raw)) * 100
+
+
+summary(df_cov$sed_basic_demographics_gestational_age_delivery)
+mean(df_cov$sed_basic_demographics_gestational_age_delivery, na.rm = TRUE)
+sd(df_cov$sed_basic_demographics_gestational_age_delivery, na.rm = TRUE)
+sum(is.na(df_cov$sed_basic_demographics_gestational_age_delivery))
+mean(is.na(df_cov$sed_basic_demographics_gestational_age_delivery)) * 100
 
 #################################################################################
 ##                                                                            ##
@@ -204,7 +236,7 @@ ggplot(df_cov, aes(
 
 
 ggsave(
-  filename = "output/Depression/Depression_Amygdala_Scatter_plot_12MAR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  filename = "##/##/##.png",   # file name (can be .png, .pdf, .jpeg, etc.)
   width = 8,                      # width in inches
   height = 6,                     # height in inches
   dpi = 300                        # resolution (good for publications)
