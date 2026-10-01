@@ -32,15 +32,6 @@ library(lmerTest)
 #Read in csv if preferred, but warning that it will not have variables saved properly!!!!
 #df_cov <- read.csv("data/processed/Protective_Factors_Data_Cleaned_27OCT2025.csv")
 
-
-#Read the RDS file and assign it to a variable - this should have variables saved properly
-##Protective_Factors_Data_Cleaned_2_17FEB2026.Rds - sites removed, without PROMIS
-##Protective_Factors_Data_Cleaned_2_20FEB2026.Rds - without PROMIS
-###Protective_Factors_Data_PROMIS_Cleaned_2_20FEB2026.Rds - sites removed, with PROMIS, outliers removed PACEs
-
-
-##Critical Dfs
-#df_cov <- readRDS("data/processed/Protective_Factors_Data_APA_Ses2_Cleaned_2_12MAR2026.Rds") #Postanatal APA2
 df_cov <- readRDS("data/processed/Protective_Factors_Data_APA_PROMIS_Cleaned_2_11MAR2026.Rds") #Prenatal APA2
 
 #################################################################################
@@ -67,10 +58,17 @@ outcomes <- c(4:24)
 
 
 #Reshape data long
+
 df_long <- df_cov %>%
   dplyr::select(all_of(outcomes)) %>%
-  tidyr::pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
-
+  tidyr::pivot_longer(
+    cols = everything(),
+    names_to = "variable",
+    values_to = "value"
+  ) %>%
+  dplyr::mutate(
+    variable = stringr::str_remove(variable, "^V2_T2_vol_")
+  )
 
 #Faceted histograms
 ggplot(df_long, aes(x = value)) +
@@ -82,8 +80,8 @@ ggplot(df_long, aes(x = value)) +
 
 
 ggsave(
-  filename = "output/Depression/Amygdala_Histogram_plot_04MAR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
-  width = 8,                      # width in inches
+  filename = "##/##/Histogram_plot_01JUL2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  width = 12,                      # width in inches
   height = 6,                     # height in inches
   dpi = 300                        # resolution (good for publications)
 )
@@ -110,6 +108,10 @@ df_age <- df_cov %>%
 #df_cov_check <- df_cov %>%
 #  filter(!is.na(pex_bm_apa_apa2_depr_promisrawscore))
 
+
+
+
+
 #################################################################################
 ##                                                                            ##
 ##          Linear Mixed Effects Models - Main Analyses                       ##
@@ -117,7 +119,7 @@ df_age <- df_cov %>%
 #################################################################################
 
 #Replace with the actual ROI column names
-#roi_outcomes <- c("V2_T2_vol_Left_Amygdala", "V2_T2_vol_Right_Amygdala")
+#roi_outcomes <- c("V2_T2_vol_Left_Amygdala", "V2_T2_vol_Right_Amygdala") #for child sex interaction
 roi_outcomes <- colnames(df_cov)[4:24] 
 
 
@@ -137,11 +139,12 @@ fit_lmem <- function(outcome, data, outdir = "output") {
   
   #Build formula dynamically
   fml <- as.formula(
-    paste0(outcome, " ~ pex_bm_apa_apa2_depr_promisrawscore + child_sex + mat_ed_cat + V2_T2_vol_adjusted_age + maternal_age_delivery + ICV_z + (1|site)") 
+    paste0(outcome, " ~ pex_bm_apa_apa2_depr_promisrawscore + child_sex + V2_T2_vol_adjusted_age + mat_ed_cat  + maternal_age_delivery + ICV_z + (1|site)") 
   )
   
-  ##Covariates = mat_ed_5cat   PACES  pex_bm_apa_apa2_depr_promisrawscore
-  ###Adding in the interaction, below
+  ##Covariates = mat_ed_5cat   PACES  pex_bm_apa_apa2_depr_promisrawscore maternal_age_delivery V2_T2_vol_adjusted_age
+  ##APA gestational age = pex_bm_apa_gestational_age
+  ###Other infant age = V2_T2_vol_candidate_age sed_basic_demographics_gestational_age_delivery
 
   #Fit model
   m <- lmerTest::lmer(fml, data = data)
@@ -207,40 +210,6 @@ sig_results_adj
 
 
 
-#####################Saving model output with all effects######################################
-#Define new output folder nested under PACES
-my_output_folder <- here("output", "Depression", "Prenatal_Model_Output")
-
-#Directories: Full_Model_Output   "Reduced_Model_Output"
-
-#Run across all ROIs to save them in the output folder
-results <- map_dfr(roi_outcomes, fit_lmem, data = df_cov, outdir = my_output_folder)
-
-
-
-
-
-
-
-###If you want to save just the significant effects
-#Make sure output folder exists
-my_output_folder <- here("output", "Depression", "Prenatal_Model_Output")
-if (!dir.exists(my_output_folder)) dir.create(my_output_folder, recursive = TRUE)
-
-
-#Save ALL results (including p_adj column)
-write_csv(results, file = file.path(my_output_folder, "All_ROI_Results_with_p_adj.csv"))
-
-
-#Save significant results UNCORRECTED
-write_csv(sig_results, file = file.path(my_output_folder, "Significant_ROI_Results_Uncorrected.csv"))
-
-
-#Save significant results AFTER FDR correction
-write_csv(sig_results_adj, file = file.path(my_output_folder, "Significant_ROI_Results_FDR.csv"))
-
-
-
 
 
 
@@ -286,7 +255,7 @@ ggplot(results, aes(x = estimate, y = reorder(roi, estimate))) +
   )
 
 ggsave(
-  filename = "output/Depression/Depression_forest_plot_04MAR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  filename = "##/##/Depression_forest_plot_04MAR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
   width = 8,                      # width in inches
   height = 6,                     # height in inches
   dpi = 300                        # resolution (good for publications)
@@ -361,7 +330,7 @@ p_other + p_cereb +
 
 
 ggsave(
-  filename = "output/Depression/All_ROIs_Depression_forest_plot_27APR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  filename = "##/##/All_ROIs_Depression_forest_plot_27APR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
   width = 14,                      # width in inches
   height = 8,                     # height in inches
   dpi = 300                        # resolution (good for publications)
@@ -404,7 +373,7 @@ ggplot(df_cov, aes(
 
 
 ggsave(
-  filename = "output/Depression/Depression_v02_Right_Amygdala_Scatter_plot_12MAR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  filename = "##/##/Depression_v02_Right_Amygdala_Scatter_plot_12MAR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
   width = 8,                      # width in inches
   height = 6,                     # height in inches
   dpi = 300                        # resolution (good for publications)
@@ -432,12 +401,11 @@ ggplot(df_cov, aes(
 
 
 ggsave(
-  filename = "output/Depression/Depression_Slope_Right_Amygdala_plot_10APR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  filename = "##/##/Depression_Slope_Right_Amygdala_plot_10APR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
   width = 10,                      # width in inches
   height = 10,                     # height in inches
   dpi = 300                        # resolution (good for publications)
 )
-
 
 
 
@@ -455,7 +423,7 @@ ggsave(
 ##                                                                            ##
 #################################################################################
 df_sex <- df_cov %>%
-  filter(child_sex == 1) #0 is female, 1 is male
+  filter(child_sex == 0) #0 is female, 1 is male
 
 
 
@@ -464,10 +432,20 @@ df_sex <- df_cov %>%
 #roi_outcomes <- c("V2_T2_vol_Left_Amygdala", "V2_T2_vol_Right_Amygdala", "V2_T2_vol_Left_Pallidum", "V2_T2_vol_Right_Pallidum", 
 #                  "V2_T2_vol_Left_Accumbens_area", "V2_T2_vol_Right_Accumbens_area", "V2_T2_vol_Left_Putamen",
 #                  "V2_T2_vol_Right_Putamen")
+
+
+#All ROIs
 #roi_outcomes <- colnames(df_cov)[4:24] 
 
-#roi_outcomes <- c("V2_T2_vol_Left_Amygdala", "V2_T2_vol_Right_Amygdala")
-roi_outcomes <- colnames(df_cov)[4:24] 
+
+
+
+
+##Keep in mind that these are what was used in paper
+roi_outcomes <- c("V2_T2_vol_Left_Amygdala", "V2_T2_vol_Right_Amygdala")
+
+
+
 
 
 
@@ -585,7 +563,7 @@ sig_results_adj
 ##                         Family History and Depression                      ##
 ##                                                                            ##
 #################################################################################
-df_cov <- readRDS("data/processed/Protective_Factors_Data_Family_Hx_Cleaned_2_16MAR2026.Rds")
+df_cov <- readRDS("##/##/Protective_Factors_Data_Family_Hx_Cleaned_2_16MAR2026.Rds")
 
 summary(df_cov$pex_bm_psych_bm_005) ##Just to check the numbers
 class(df_cov$pex_bm_psych_bm_005) ##Just to check that this is properly a factor
@@ -606,6 +584,9 @@ df_cov <- df_cov %>%
 #This should naturally be ignoring NAs, 777 and 999
 ##At least one "1" → “Yes” - EVEN if there is an NA, missing values don’t matter because you already have confirmation
 ##Only "0" + NA → ambiguous. You don’t actually know if family history is absent. You only know it wasn’t endorsed in observed responses
+
+table(df_cov$family_history_depression)
+
 
 ##This is making a continuous variable to see if it is a "dose effect"
 ###Note that if any column has an NA we will get an NA
@@ -662,7 +643,7 @@ fit_lmem <- function(outcome, data, outdir = "output") {
   )
   
   ##Covariates = mat_ed_5cat  pex_bm_apa_apa2_depr_promisrawscore
-  ##Here the covariate to add will be pex_bm_psych_bm_005
+  ##Here the covariate to add will be family_history_depression
   
   
   
@@ -684,6 +665,8 @@ fit_lmem <- function(outcome, data, outdir = "output") {
 }
 
 
+
+##family_history_depressionYes    --- change this to see ME of family history
 
 
 
@@ -745,7 +728,7 @@ t.test(
 )
 
 df_cov %>%
-  group_by(pex_bm_psych_bm_005) %>%
+  group_by(family_history_depression) %>%
   summarise(
     mean_dep = mean(pex_bm_apa_apa2_depr_promisrawscore, na.rm = TRUE),
     sd_dep = sd(pex_bm_apa_apa2_depr_promisrawscore, na.rm = TRUE),
