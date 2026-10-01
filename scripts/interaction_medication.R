@@ -29,7 +29,7 @@ library(emmeans)
 
 
 #Read the RDS file and assign it to a variable - this should have variables saved properly
-df_cov <- readRDS("data/processed/Protective_Factors_Data_Medication_Cleaned_2_19MAR2026.Rds")
+df_cov <- readRDS("##/##/Protective_Factors_Data_Medication_Cleaned_2_19MAR2026.Rds")
 
 
 
@@ -51,19 +51,25 @@ df_cov <- readRDS("data/processed/Protective_Factors_Data_Medication_Cleaned_2_1
 ##
 #####################################################################################
 
+
+
 ##Proper N which accounts for NAs (LME below already does this)
 df_cov %>%
-  filter(!is.na(pex_bm_apa_apa2_depr_promisrawscore)) %>%
+  filter(!is.na(pex_bm_apa_apa2_depr_promisrawscore)) %>% #since this our main variable remove NAs here
   count(pex_bm_health_preg__meds_001) %>%  ##depressed_meds
   mutate(percent = n / sum(n) * 100)
 
 
+##1 = Yes usage 
+
+df_cov %>%
+  filter(!is.na(pex_bm_health_preg__meds_001)) %>%
+  filter(!is.na(pex_bm_apa_apa2_depr_promisrawscore)) %>%
+  count(depressed_meds) %>%  ##depressed_meds
+  mutate(percent = n / sum(n) * 100)
 
 
-
-
-
-
+####should just filter out of df_cov anyone with NA for pex_bm_health_preg_meds_001 for cleanliness 
 
 
 ####################################################################################
@@ -79,7 +85,22 @@ df_meds <- df_cov %>%
   filter(pex_bm_health_preg__meds_001 == 0) #0 is people that reported no medication usage (N should be 677; note note automatically excluding NAs)
 
 df_meds_depr <- df_cov %>%
-  filter(depressed_meds == 0) #0 is people that reported no depression medication usage (N should be 1784; but note this is not automatically excluding NAs)
+  filter(depressed_meds == 0) %>% #0 is people that reported no depression medication usage (N should be 1784; but note this is not automatically excluding NAs)
+  filter(!is.na(pex_bm_health_preg__meds_001)) ##to be ultra conservative, I am going to remove anyone who reported NA for this original question since we can't know for sure if they took meds
+
+
+#######Demographics 
+summary(df_meds$pex_bm_apa_apa2_depr_promisrawscore)
+mean(df_meds$pex_bm_apa_apa2_depr_promisrawscore, na.rm = TRUE)
+sd(df_meds$pex_bm_apa_apa2_depr_promisrawscore, na.rm = TRUE)
+
+
+summary(df_meds_depr$pex_bm_apa_apa2_depr_promisrawscore)
+mean(df_meds_depr$pex_bm_apa_apa2_depr_promisrawscore, na.rm = TRUE)
+sd(df_meds_depr$pex_bm_apa_apa2_depr_promisrawscore, na.rm = TRUE)
+
+
+
 
 
 ####################################################################################
@@ -185,7 +206,7 @@ interact_plot(m_full, pred = pex_bm_apa_apa2_depr_promisrawscore, modx = pex_bm_
 
 
 ggsave(
-  filename = "output/Depression/Meds_Continuous_Interaction_plot_06APR2026.png",   #file name (can be .png, .pdf, .jpeg, etc.)
+  filename = "##/##/Meds_Continuous_Interaction_plot_06APR2026.png",   #file name (can be .png, .pdf, .jpeg, etc.)
   width = 8,                      #width in inches
   height = 6,                     #height in inches
   dpi = 300                        #resolution (good for publications)
@@ -277,7 +298,7 @@ interact_plot(m_full, pred = pex_bm_apa_apa2_depr_promisrawscore, modx = depress
 
 
 ggsave(
-  filename = "output/Depression/Depressed_Meds_Group_Interaction_plot_06APR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  filename = "##/##/Depressed_Meds_Group_Interaction_plot_06APR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
   width = 8,                      # width in inches
   height = 6,                     # height in inches
   dpi = 300                        # resolution (good for publications)
@@ -316,7 +337,7 @@ ggsave(
 ##
 #####################################################################################
 
-#outcome <- ("V2_T2_vol_Right_Amygdala")
+#outcome <- colnames(df_cov)[4:24] #for double checking purposes
 outcome <- c("V2_T2_vol_Right_Amygdala", "V2_T2_vol_Right_Pallidum", "V2_T2_vol_Left_Pallidum", "V2_T2_vol_Right_Accumbens_area",
              "V2_T2_vol_Left_Accumbens_area", "V2_T2_vol_Right_Putamen", "V2_T2_vol_Left_Putamen")
 
@@ -364,42 +385,56 @@ fit_lmem_mod <- function(outcome, data) {
 #interaction result
 #interaction_result <- fit_lmem_mod(outcome, df_meds) #change the df depending on your sensitivity test
 #Run across all ROIs
-interaction_result <- map_dfr(outcome, fit_lmem_mod, data = df_meds_depr) #for multiple ROIs
+interaction_result <- map_dfr(outcome, fit_lmem_mod, data = df_meds_depr) #df_meds_depr & df_meds & df_cov if double checking
+
+
+
 
 #View all fixed effects
-interaction_result
+#interaction_result
 
 #Add multiple correction adjustment (BH)
-interaction_result <- interaction_result %>%
-  mutate(p_adj = p.adjust(p.value, method = "BH"))
+#interaction_result <- interaction_result %>%
+#  mutate(p_adj = p.adjust(p.value, method = "BH"))
 
 #Flag significant results after FDR
-sig_results_adj <- interaction_result %>%
-  filter(p_adj < 0.05) %>%
-  arrange(p_adj)
+#sig_results_adj <- interaction_result %>%
+#  filter(p_adj < 0.05) %>%
+#  arrange(p_adj)
 
 #Seeing output
-interaction_result
-sig_results_adj
+#interaction_result
+#sig_results_adj
+
+
+
+##FDR for just 7 ROIs and depression 
+depression_results <- interaction_result %>%
+  filter(term == "pex_bm_apa_apa2_depr_promisrawscore") %>%
+  mutate(p_adj = p.adjust(p.value, method = "BH"))
+
+sig_results_adj <- depression_results %>%
+  filter(p_adj < 0.05)
 
 
 
 ################################Main Effect plot#########################################
-ggplot(df_meds_depr, aes(
+ggplot(df_cov, aes(
   x = pex_bm_apa_apa2_depr_promisrawscore,    
   y = V2_T2_vol_Right_Amygdala
 )) +
+  geom_point(alpha = 0.4) +
   geom_smooth(method = "lm", se = TRUE) +
   labs(
-    x = "Depression (v02)",
+    x = "Depression (v01)",
     y = "Right Amygdala Volume",
-    title = "Right Amygdala vs Depression (Medications for Depression Symptoms Removed)"
+    title = "Right Amygdala vs Depression (Full Sample)"
   ) +
   theme_minimal()
 
 
 ggsave(
-  filename = "output/Depression/DeprMeds_Depression_Slope_Right_Amygdala_plot_13APR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  filename = "##/##/PointsNoneRemoved_FullSample_Depression_Slope_Right_Amygdala_plot_01JUL2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
   width = 10,                      # width in inches
   height = 10,                     # height in inches
   dpi = 300                        # resolution (good for publications)
@@ -428,17 +463,37 @@ ggplot(df_all, aes(
   ) +
   theme_minimal()
 
+
+
 ggsave(
-  filename = "output/Depression/AllMeds_Slope_Right_Amygdala_plot_20APR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  filename = "output/Depression/AllMeds_Slope_Right_Amygdala_plot_10JUL2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
   width = 10,                      # width in inches
   height = 10,                     # height in inches
   dpi = 300                        # resolution (good for publications)
 )
 
 
+###All data points
+ggplot(df_all, aes(
+  x = pex_bm_apa_apa2_depr_promisrawscore,
+  y = V2_T2_vol_Right_Amygdala,
+  color = group
+)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(
+    x = "Depression (v01)",
+    y = "Right Amygdala Volume",
+    title = "Right Amygdala vs Depression Across Samples"
+  ) +
+  theme_minimal()
 
-
-
+ggsave(
+  filename = "##/##/AllMeds_INDIVIDUALPoints_Slope_Right_Amygdala_plot_01JUL2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  width = 10,                      # width in inches
+  height = 10,                     # height in inches
+  dpi = 300                        # resolution (good for publications)
+)
 
 
 
