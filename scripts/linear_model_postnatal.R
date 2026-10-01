@@ -64,10 +64,10 @@ fit_lmem <- function(outcome, data, outdir = "output") {
   
   #Build formula dynamically
   fml <- as.formula(
-    paste0(outcome, " ~ pex_bm_apa_apa2_depr_promisrawscore_prenatal + pex_bm_apa_apa2_depr_promisrawscore_postnatal + child_sex + mat_ed_cat + V2_T2_vol_adjusted_age + maternal_age_delivery + ICV_z + (1|site)") 
+    paste0(outcome, " ~  pex_bm_apa_apa2_depr_promisrawscore_prenatal + pex_bm_apa_apa2_depr_promisrawscore_postnatal + child_sex + mat_ed_cat + V2_T2_vol_adjusted_age + maternal_age_delivery + ICV_z + (1|site)") 
   )
   
-  ##Covariates = mat_ed_5cat   PACES  pex_bm_apa_apa2_depr_promisrawscore
+  ##Covariates = mat_ed_5cat   PACES pex_bm_apa_apa2_depr_promisrawscore_prenatal
   ###Adding in the interaction, below
   
   #Fit model
@@ -125,3 +125,10 @@ sig_results_adj <- results %>%
 results
 sig_results_adj
 
+
+
+
+
+##double checking 
+summary(df_cov$pex_bm_apa_apa2_depr_promisrawscore_prenatal)
+summary(df_cov$pex_bm_apa_apa2_depr_promisrawscore_postnatal)
