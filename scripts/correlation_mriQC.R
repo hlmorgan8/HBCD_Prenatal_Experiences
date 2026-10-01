@@ -17,12 +17,15 @@
 library(dplyr)
 library(psych)
 library(knitr)
+library(ggplot2)
 
 
-df_cov <- readRDS("data/processed/Protective_Factors_Data_MRI_QC_Cleaned_2_08APR2026.Rds")
+df_cov <- readRDS("##/##/Protective_Factors_Data_MRI_QC_Cleaned_2_08APR2026.Rds")
 
 #####################################################################
-summary(df_cov$img_mriqc_T2w_snr_total)
+summary(df_cov$img_mriqc_T2w_snrd_total)
+summary(df_cov$img_mriqc_T2w_cjv)
+
 
 
 ####################################################################
@@ -38,6 +41,8 @@ cor(vars, use = "pairwise.complete.obs")
 vars <- df_cov %>%
   select(pex_bm_apa_apa2_depr_promisrawscore, img_mriqc_T2w_snrd_total)
 
+##img_mriqc_T2w_cjv or img_mriqc_T2w_snrd_total
+
 cor(vars, use = "pairwise.complete.obs")
 
 cor.test(
@@ -45,6 +50,32 @@ cor.test(
   df_cov$img_mriqc_T2w_snrd_total,
   use = "pairwise.complete.obs"
 )
+
+
+
+
+
+##Infant Age
+df_cov <- df_cov %>%
+  filter(!is.na(pex_bm_apa_apa2_depr_promisrawscore))
+
+vars <- df_cov %>%
+  select(V2_T2_vol_adjusted_age, img_mriqc_T2w_cjv)
+
+
+
+cor(vars, use = "pairwise.complete.obs")
+
+cor.test(
+  df_cov$V2_T2_vol_adjusted_age,
+  df_cov$img_mriqc_T2w_cjv,
+  use = "pairwise.complete.obs"
+)
+
+##img_mriqc_T2w_cjv or img_mriqc_T2w_snrd_total
+
+
+
 
 
 
@@ -64,7 +95,7 @@ ggplot(df_cov, aes(
 
 
 ggsave(
-  filename = "output/Depression/Depression_MRIQC_08APR2026.png",   # file name (can be .png, .pdf, .jpeg, etc.)
+  filename = "####/####.png",   # file name (can be .png, .pdf, .jpeg, etc.)
   width = 8,                      # width in inches
   height = 6,                     # height in inches
   dpi = 300                        # resolution (good for publications)
